@@ -1,0 +1,21 @@
+<?php
+return [
+    'dashboard' => 'ផ្ទាំងគ្រប់គ្រង',
+    'renters' => 'អ្នកជួល',
+    'rooms' => 'បន្ទប់',
+    'room_types' => 'ប្រភេទបន្ទប់',
+    'room_history' => 'ប្រវត្តិបន្ទប់',
+    'finance' => 'ហិរញ្ញវត្ថុ',
+    'bills' => 'វិក្កយបត្រ',
+    'payment_history' => 'ប្រវត្តិបង់ប្រាក់',
+    'administration' => 'ការគ្រប់គ្រង',
+    'users' => 'អ្នកប្រើប្រាស់',
+    'system_settings' => 'ការកំណត់ប្រព័ន្ធ',
+    'preferences' => 'ចំណូលចិត្ត',
+    'audit_logs' => 'កំណត់ហេតុ',
+    'logout' => 'ចាកចេញ',
+    'main' => 'មីនុយ',
+    'rooms_management' => 'ការគ្រប់គ្រងបន្ទប់',
+    'system' => 'ប្រព័ន្ធ',
+    'system_name' => 'ប្រព័ន្ធគ្រប់គ្រងបន្ទប់ជួល',
+];

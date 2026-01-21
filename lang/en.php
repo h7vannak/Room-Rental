@@ -1,0 +1,21 @@
+<?php
+return [
+    'dashboard' => 'Dashboard',
+    'renters' => 'Renters',
+    'rooms' => 'Rooms',
+    'room_types' => 'Room Types',
+    'room_history' => 'Room History',
+    'finance' => 'Finance',
+    'bills' => 'Bills',
+    'payment_history' => 'Payment History',
+    'administration' => 'Administration',
+    'users' => 'Users',
+    'system_settings' => 'System Settings',
+    'preferences' => 'Preferences',
+    'audit_logs' => 'Audit Logs',
+    'logout' => 'Logout',
+    'main' => 'Main',
+    'rooms_management' => 'Rooms Management',
+    'system' => 'System',
+    'system_name' => 'Room Rental Management System',
+];

@@ -1,19 +1,20 @@
 <?php
+date_default_timezone_set('Asia/Phnom_Penh');
+
 $host = 'localhost';
-$db   = 'room_rental';
 $user = 'root';
 $pass = '';
-$charset = 'utf8mb4';
+$db   = 'room_rental';
 
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+// 1. Create connection
+$conn = new mysqli($host, $user, $pass, $db);
 
-$options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-];
-
-try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (\PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+// 2. Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
+
+// 3. Set charset to match your database
+$conn->set_charset("utf8mb4");
+
+// Now you can use $conn to run queries
