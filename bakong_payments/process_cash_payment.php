@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn->begin_transaction();
         
         // Update bill status
-        $stmt1 = $conn->prepare("UPDATE monthly_bills SET paid = 1 WHERE bill_id = ?");
+        $stmt1 = $conn->prepare("UPDATE monthly_bills SET is_paid = 1 WHERE bill_id = ?");
         $stmt1->bind_param("i", $bill_id);
         $stmt1->execute();
 

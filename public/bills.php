@@ -237,7 +237,7 @@ $ratesData = $ratesQuery ? $ratesQuery->fetch_all(MYSQLI_ASSOC) : [];
                                 </div>
                             </td>
                             <td class="px-6 py-6 font-bold text-slate-500">
-                                <?= date('F Y', strtotime($b['bill_month'])) ?>
+                                <?= date('d/M/Y', strtotime($b['bill_month'])) ?>
                             </td>
                             <td class="px-6 py-6 text-right">
                                 <p class="font-black text-blue-600 text-lg">$<?= number_format($b['total'], 2) ?></p>

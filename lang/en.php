@@ -23,7 +23,7 @@ return [
     'room_type_reassign' => 'Room Type Reassign',
     'history' => 'History',
     'nationalities' => 'Nationalities',
-    'documents' => 'Digital Archive',
+    'renter_documents' => 'Digital Archive',
     'english' => 'EN',
     'khmer' => 'KH',
     'index' => 'Finance Dashboard',

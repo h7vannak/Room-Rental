@@ -23,7 +23,7 @@ return [
     'room_type_reassign' => 'កែប្រែប្រភេទបន្ទប់',
     'history' => 'ប្រវត្តិបន្ទប់',
     'nationalities' => 'សញ្ជាតិ',
-    'documents' => 'ឯកសារអត្តសញ្ញាណ',
+    'renter_documents' => 'ឯកសារអត្តសញ្ញាណ',
     'english' => 'English',
     'khmer' => 'ខ្មែរ',
     'index' => 'ផ្ទាំងគ្រប់គ្រងហិរញ្ញវត្ថុ',

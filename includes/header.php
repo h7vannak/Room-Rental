@@ -130,7 +130,7 @@ $T = file_exists($langFile) ? include $langFile : include "../lang/en.php";
                             <a href="../public/renter_documents.php"
                                 class="flex items-center gap-3 px-4 py-2 text-sm transition-all <?= $currentPage == 'renter_documents.php' ? 'text-white font-bold opacity-100' : 'opacity-60 hover:opacity-100 hover:translate-x-1' ?>">
                                 <i class="fa-solid fa-folder-tree w-4 text-center text-[12px]"></i>
-                                <span><?= $T['documents'] ?? 'Documents' ?></span>
+                                <span><?= $T['renter_documents'] ?? 'Renter_Documents' ?></span>
                             </a>
                             <a href="../public/renters.php"
                                 class="flex items-center gap-3 px-4 py-2 text-sm transition-all <?= $currentPage == 'renters.php' ? 'text-white font-bold opacity-100' : 'opacity-60 hover:opacity-100 hover:translate-x-1' ?>">
@@ -264,8 +264,50 @@ $T = file_exists($langFile) ? include $langFile : include "../lang/en.php";
             <div
                 class="sticky top-6 z-40 dark:bg-gray-800 dark:border-r dark:border-gray-700 bg-blue-700 text-white flex justify-between items-center px-8 py-4 mb-8 rounded-2xl shadow-lg">
                 <div class="font-bold text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-circle-chevron-right text-blue-300"></i>
-                    <?= str_replace('.php', '', ucfirst($currentPage)) ?>
+                    <?php
+                    $pageKey = str_replace('.php', '', $currentPage);
+
+                    // Define Parent Category mapping
+                    $menuMap = [
+                        'tenant_info' => ['nationalities', 'renter_documents', 'renters'],
+                        'rooms_management' => ['rooms', 'room_types', 'room_type_reassign', 'room_history'],
+                        'finance' => ['utility_rates', 'bills', 'payments'],
+                        'administration' => ['users', 'system_settings', 'preferences', 'audit_logs']
+                    ];
+
+                    // Define where the user goes when they click the Parent Name
+                    $parentRedirect = [
+                        'tenant_info' => 'renters.php',
+                        'rooms_management' => 'rooms.php',
+                        'finance' => 'bills.php',
+                        'administration' => '../admin/users.php'
+                    ];
+
+                    $parentKey = '';
+                    foreach ($menuMap as $parent => $children) {
+                        if (in_array($pageKey, $children)) {
+                            $parentKey = $parent;
+                            break;
+                        }
+                    }
+                    ?>
+
+                    <?php if ($pageKey === 'index'): ?>
+                        <i class="fa-solid fa-gauge text-blue-300 mr-1"></i>
+                        <span><?= $T['dashboard'] ?? 'Dashboard' ?></span>
+                    <?php elseif ($parentKey): ?>
+                        <a href="../public/<?= $parentRedirect[$parentKey] ?>"
+                            class="ajax-link opacity-60 font-medium hover:opacity-100 hover:text-blue-200 transition-all">
+                            <?= $T[$parentKey] ?? ucfirst(str_replace('_', ' ', $parentKey)) ?>
+                        </a>
+
+                        <i class="fa-solid fa-chevron-right text-[10px] opacity-40 mx-1"></i>
+
+                        <span class="text-white"><?= $T[$pageKey] ?? ucfirst(str_replace('_', ' ', $pageKey)) ?></span>
+                    <?php else: ?>
+                        <i class="fa-solid fa-circle-chevron-right text-blue-300 mr-1"></i>
+                        <span><?= ucfirst($pageKey) ?></span>
+                    <?php endif; ?>
                 </div>
 
                 <div class="flex items-center gap-6">
