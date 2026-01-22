@@ -42,10 +42,10 @@ $users = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                 Manage staff permissions and system access levels.
             </p>
         </div>
-        <a href="user_create.php"
+        <button onclick="openUserModal()"
             class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2 hover:scale-105 active:scale-95">
-            <i class="fa-solid fa-user-plus"></i> New User
-        </a>
+            <i class="fa-solid fa-user-plus"></i> Add New
+        </button>
     </div>
 
     <?php if ($security_error): ?>
@@ -123,7 +123,8 @@ $users = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                                             <?php endif; ?>
                                         </p>
                                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">UID:
-                                            <?= $u['user_id'] ?></p>
+                                            <?= $u['user_id'] ?>
+                                        </p>
                                     </div>
                                 </div>
                             </td>
@@ -157,17 +158,16 @@ $users = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
                             <td class="px-8 py-6 text-right">
                                 <div class="flex justify-end items-center gap-2">
-                                    <a href="user_edit.php?id=<?= $u['user_id'] ?>"
+                                    <button onclick='openUserModal(<?= json_encode($u) ?>)'
                                         class="p-2 rounded-xl <?= $isDark ? 'hover:bg-blue-500/20 text-blue-400' : 'hover:bg-blue-50 text-blue-600' ?> transition-colors">
                                         <i class="fa-solid fa-pen-to-square"></i>
-                                    </a>
+                                    </button>
 
                                     <?php if ($u['is_active'] && $u['user_id'] != $current_user_id): ?>
-                                        <a href="user_delete.php?id=<?= $u['user_id'] ?>"
-                                            class="p-2 rounded-xl <?= $isDark ? 'hover:bg-rose-500/20 text-rose-400' : 'hover:bg-rose-50 text-rose-500' ?> transition-colors"
-                                            onclick="return confirm('Disable <?= htmlspecialchars($u['username']) ?>?')">
+                                        <button onclick="disableUser(<?= $u['user_id'] ?>, '<?= $u['username'] ?>')"
+                                            class="p-2 rounded-xl <?= $isDark ? 'hover:bg-rose-500/20 text-rose-400' : 'hover:bg-rose-50 text-rose-500' ?> transition-colors">
                                             <i class="fa-solid fa-user-slash"></i>
-                                        </a>
+                                        </button>
                                     <?php elseif ($u['user_id'] == $current_user_id): ?>
                                         <span class="p-2 opacity-20 cursor-not-allowed"
                                             title="Security: Cannot disable yourself">
@@ -183,6 +183,11 @@ $users = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
         </div>
     </div>
 </div>
+
+<script>
+    // Define this before calling your JS files
+    window.AUTH_USER_ID = <?= json_encode($_SESSION['user']['id'] ?? $_SESSION['user']['user_id']) ?>;
+</script>
 
 <style>
     body {

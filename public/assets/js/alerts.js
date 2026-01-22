@@ -116,57 +116,54 @@ function handleCashPayment(billId, amount, row) {
   });
 }
 
+// Delete handler
 async function ajaxDelete(id, url, rowElement) {
-  const isDark = document.documentElement.classList.contains("dark");
-
   const result = await Swal.fire({
     title: "Are you sure?",
-    text: "This action cannot be undone.",
+    text: "This room and its status will be removed.",
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#ef4444",
-    cancelButtonColor: "#64748b",
     confirmButtonText: "Yes, delete it!",
-    background: isDark ? "#1f2937" : "#ffffff",
-    color: isDark ? "#ffffff" : "#1f2937",
-    customClass: { popup: "rounded-[2rem]" },
   });
 
   if (result.isConfirmed) {
-    const data = new FormData();
-    data.append("id", id);
-
     try {
-      const response = await fetch(url + "?action=delete", {
+      // Create form data to ensure PHP sees $_POST['id']
+      const formData = new FormData();
+      formData.append("id", id);
+
+      const response = await fetch(`${url}?action=delete`, {
         method: "POST",
-        body: data,
+        body: formData,
       });
-      const resData = await response.json();
+
+      // Catch 500 errors before they break the JSON parser
+      const text = await response.text();
+      let resData;
+      try {
+        resData = JSON.parse(text);
+      } catch (e) {
+        console.error("Server Raw Response:", text);
+        throw new Error("Server sent invalid data. Check console.");
+      }
 
       if (resData.success) {
-        // Professional Animation: Slide and Fade
-        rowElement.style.transition = "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
-        rowElement.style.transform = "translateX(50px)";
         rowElement.style.opacity = "0";
-
-        // Show the toast message
-        window.toast(resData.message, "success");
-
-        // Remove from DOM after animation finishes
-        setTimeout(() => {
-          rowElement.remove();
-          // Update the total count badge
-          const countBadge = document.getElementById("total-count");
-          if (countBadge) {
-            const currentCount = document.querySelectorAll(".nat-item").length;
-            countBadge.textContent = currentCount + " TOTAL";
-          }
-        }, 600);
+        rowElement.style.transform = "translateX(20px)";
+        setTimeout(() => rowElement.remove(), 300);
+        window.toast?.(resData.message, "success");
       } else {
-        Swal.fire("Error", resData.message, "error");
+        // Swal.fire("Error", resData.message, "error");
+        Swal.fire({
+          icon: "error",
+          title: "Action Blocked",
+          text: resData.message,
+          confirmButtonColor: "#ef4444",
+        });
       }
     } catch (err) {
-      Swal.fire("Error", "Network connection failed.", "error");
+      Swal.fire("Connection Failed", err.message, "error");
     }
   }
 }
@@ -454,6 +451,388 @@ function openRenterModal(renterData = null) {
   });
 }
 
+// NEW: EDIT/CREATE Room Modal Handler
+function openRoomModal(roomData = null) {
+  // 1. Get data from the hidden JSON scripts in rooms.php
+  const types = JSON.parse(
+    document.getElementById("typesJson")?.textContent || "[]",
+  );
+  const renters = JSON.parse(
+    document.getElementById("rentersJson")?.textContent || "[]",
+  );
+
+  const isDark = document.documentElement.classList.contains("dark");
+  const action = roomData ? "edit" : "create";
+
+  Swal.fire({
+    title: roomData ? "Update Room Unit" : "Register New Unit",
+    width: "700px",
+    background: isDark ? "#1f2937" : "#ffffff",
+    color: isDark ? "#ffffff" : "#1f2937",
+    padding: "1.5rem",
+    customClass: {
+      popup: "rounded-[2rem]",
+    },
+    html: `
+            <form id="roomForm" class="text-left space-y-5 mt-4">
+                <input type="hidden" name="room_id" value="${roomData?.room_id || ""}">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase opacity-50 mb-2 ml-1 tracking-widest text-blue-500">Room Number</label>
+                        <input type="text" name="room_number" value="${roomData?.room_number || ""}" class="modal-input" required placeholder="e.g. 101">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase opacity-50 mb-2 ml-1 tracking-widest">Room Type</label>
+                        <select name="room_type_id" class="modal-input" required>
+                            <option value="">-- Select Type --</option>
+                            ${types.map((t) => `<option value="${t.room_type_id}" ${roomData?.room_type_id == t.room_type_id ? "selected" : ""}>${t.room_type_name}</option>`).join("")}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase opacity-50 mb-2 ml-1 tracking-widest">Current Tenant</label>
+                        <select name="renter_id" class="modal-input">
+                            <option value="">-- No Tenant (Vacant) --</option>
+                            ${renters.map((r) => `<option value="${r.renter_id}" ${roomData?.renter_id == r.renter_id ? "selected" : ""}>${r.renter_name}</option>`).join("")}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase opacity-50 mb-2 ml-1 tracking-widest">Max Capacity</label>
+                        <input type="number" name="qty_person" value="${roomData?.qty_person || "1"}" class="modal-input" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase opacity-50 mb-2 ml-1 tracking-widest">Lease Date</label>
+                        <input type="date" name="rent_date" value="${roomData?.rent_date || ""}" class="modal-input">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase opacity-50 mb-2 ml-1 tracking-widest text-emerald-500">Status</label>
+                        <select name="status" class="modal-input">
+                            <option value="Available" ${roomData?.status === "Available" ? "selected" : ""}>Available</option>
+                            <option value="ACTIVE" ${roomData?.status === "ACTIVE" ? "selected" : ""}>Active</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+            <style>
+                .modal-input {
+                    width: 100%; padding: 10px 14px; border-radius: 12px; 
+                    border: 1px solid ${isDark ? "#374151" : "#e2e8f0"};
+                    background: ${isDark ? "#111827" : "#ffffff"};
+                    color: ${isDark ? "#ffffff" : "#1f2937"};
+                    outline: none; transition: all 0.2s;
+                }
+                .modal-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+            </style>
+        `,
+    showCancelButton: true,
+    confirmButtonText: roomData ? "Update Unit" : "Create Unit",
+    confirmButtonColor: "#2563eb",
+    preConfirm: async () => {
+      const form = document.getElementById("roomForm");
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return false;
+      }
+      const formData = new FormData(form);
+      // We append the room_id to the URL so room_actions.php picks it up via $_REQUEST['id']
+      const roomId = roomData?.room_id || "";
+      const response = await fetch(
+        `room_actions.php?action=${action}&id=${roomId}`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+      const result = await response.json();
+      if (!result.success) {
+        Swal.showValidationMessage(result.message);
+      }
+      return result;
+    },
+  }).then((result) => {
+    if (result.isConfirmed && result.value?.success) {
+      if (typeof toast === "function") toast(result.value.message);
+      setTimeout(() => location.reload(), 1000);
+    }
+  });
+}
+
+//NEW: EDIT/CREATE Room type Modal Handler
+function openRoomTypeModal(typeData = null) {
+    const isDark = document.body.classList.contains("dark") || document.documentElement.classList.contains("dark");
+    const themeColor = typeData ? "#10b981" : "#3b82f6"; // Emerald for Edit, Blue for Create
+
+    Swal.fire({
+        title: typeData ? "Edit Room Category" : "New Room Category",
+        width: "500px",
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#ffffff" : "#1f2937",
+        padding: "1.5rem",
+        customClass: { popup: "rounded-[2.5rem]" },
+        html: `
+            <form id="roomTypeForm" class="text-left space-y-5 mt-6 px-2">
+                <input type="hidden" name="id" value="${typeData?.room_type_id || ""}">
+                
+                <div>
+                    <label class="block text-[10px] font-black uppercase opacity-40 mb-2 tracking-[0.2em] ml-1">Category Name</label>
+                    <input type="text" name="name" class="modal-input font-bold" placeholder="e.g. VIP, Studio, Suite" value="${typeData?.room_type_name || ""}" required>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black uppercase opacity-40 mb-2 tracking-[0.2em] ml-1">Base Monthly Fee (USD)</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 font-bold">$</span>
+                        <input type="number" step="0.01" name="fee" class="modal-input pl-8 font-mono" placeholder="0.00" value="${typeData?.base_room_fee || ""}" required>
+                    </div>
+                </div>
+            </form>
+
+            <style>
+                .modal-input {
+                    width: 100%; 
+                    padding: 14px 18px; 
+                    border-radius: 18px; 
+                    border: 2px solid ${isDark ? "#374151" : "#f1f5f9"};
+                    background: ${isDark ? "#111827" : "#f8fafc"};
+                    color: inherit;
+                    outline: none;
+                    transition: all 0.2s;
+                }
+                .modal-input:focus { 
+                    border-color: ${themeColor}; 
+                    background: ${isDark ? "#111827" : "#ffffff"};
+                    box-shadow: 0 0 0 4px ${themeColor}15;
+                }
+            </style>
+        `,
+        showCancelButton: true,
+        confirmButtonText: typeData ? "Save Changes" : "Create Category",
+        confirmButtonColor: themeColor,
+        cancelButtonColor: isDark ? "#4b5563" : "#94a3b8",
+        reverseButtons: true,
+        preConfirm: async () => {
+            const form = document.getElementById("roomTypeForm");
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return false;
+            }
+
+            const formData = new FormData(form);
+            const actionParam = typeData ? "edit" : "create";
+
+            try {
+                const response = await fetch(`room_type_actions.php?action=${actionParam}`, {
+                    method: "POST",
+                    body: formData,
+                });
+                const result = await response.json();
+                if (!result.success) throw new Error(result.message || "Submit failed");
+                return result;
+            } catch (error) {
+                Swal.showValidationMessage(`Error: ${error.message}`);
+            }
+        },
+    }).then((result) => {
+        if (result.isConfirmed && result.value?.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: result.value.message,
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => location.reload());
+        }
+    });
+}
+
+//NEW: EDIT/CREATE Utility Rate Modal Handler
+function openUtilityRateModal(rateData = null) {
+    const isDark = document.body.classList.contains("dark") || document.documentElement.classList.contains("dark");
+    const themeColor = rateData ? "#10b981" : "#3b82f6";
+
+    Swal.fire({
+        title: rateData ? "Edit Utility Rate" : "Set New Utility Rates",
+        width: "550px",
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#ffffff" : "#1f2937",
+        padding: "1.5rem",
+        customClass: { popup: "rounded-[2.5rem]" },
+        html: `
+            <form id="utilityForm" class="text-left space-y-5 mt-6 px-2">
+                <input type="hidden" name="id" value="${rateData?.rate_id || ""}">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase opacity-40 mb-2 tracking-[0.2em] ml-1">Electric ($/kWh)</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-bolt absolute left-4 top-1/2 -translate-y-1/2 text-amber-500"></i>
+                            <input type="number" step="0.001" name="electric_rate" class="modal-input pl-10 font-bold" value="${rateData?.electric_rate || ""}" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase opacity-40 mb-2 tracking-[0.2em] ml-1">Water ($/m³)</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-droplet absolute left-4 top-1/2 -translate-y-1/2 text-blue-500"></i>
+                            <input type="number" step="0.001" name="water_rate" class="modal-input pl-10 font-bold" value="${rateData?.water_rate || ""}" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black uppercase opacity-40 mb-2 tracking-[0.2em] ml-1">Effective Date</label>
+                    <input type="date" name="effective_date" class="modal-input font-bold" value="${rateData?.effective_date || new Date().toISOString().split('T')[0]}" required>
+                </div>
+            </form>
+
+            <style>
+                .modal-input {
+                    width: 100%; padding: 14px; border-radius: 16px; 
+                    border: 2px solid ${isDark ? "#374151" : "#f1f5f9"};
+                    background: ${isDark ? "#111827" : "#f8fafc"};
+                    color: inherit; outline: none; transition: all 0.2s;
+                }
+                .modal-input:focus { border-color: ${themeColor}; box-shadow: 0 0 0 4px ${themeColor}15; }
+            </style>
+        `,
+        showCancelButton: true,
+        confirmButtonText: rateData ? "Update Rates" : "Activate Rates",
+        confirmButtonColor: themeColor,
+        preConfirm: async () => {
+            const formData = new FormData(document.getElementById("utilityForm"));
+            const action = rateData ? "edit" : "create";
+            try {
+                const response = await fetch(`utility_rate_actions.php?action=${action}`, {
+                    method: "POST",
+                    body: formData
+                });
+                const result = await response.json();
+                if (!result.success) throw new Error(result.message);
+                return result;
+            } catch (error) {
+                Swal.showValidationMessage(`Error: ${error.message}`);
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({ icon: 'success', title: 'Success', timer: 1000, showConfirmButton: false })
+            .then(() => location.reload());
+        }
+    });
+}
+
+//NEW: EDIT/CREATE User Modal Handler
+function openUserModal(userData = null) {
+    const isDark = document.body.classList.contains("dark") || document.documentElement.classList.contains("dark");
+    const currentUserId = window.AUTH_USER_ID;
+    const isEditingSelf = userData && parseInt(userData.user_id) === currentUserId;
+    const themeColor = userData ? "#10b981" : "#3b82f6";
+
+    Swal.fire({
+        title: userData ? "Edit User Profile" : "Create New Account",
+        width: "500px",
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#ffffff" : "#1f2937",
+        padding: "1.5rem",
+        customClass: { popup: "rounded-[2.5rem]" },
+        html: `
+            <form id="userForm" class="text-left space-y-4 mt-6 px-2">
+                <input type="hidden" name="id" value="${userData?.user_id || ""}">
+                
+                <div>
+                    <label class="block text-[10px] font-black uppercase opacity-40 mb-2 tracking-widest ml-1">Username</label>
+                    <input type="text" name="username" class="modal-input font-bold" value="${userData?.username || ""}" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase opacity-40 mb-2 tracking-widest ml-1">Role</label>
+                        <select name="role" class="modal-input font-bold">
+                            <option value="staff" ${userData?.role === 'staff' ? 'selected' : ''}>STAFF</option>
+                            <option value="admin" ${userData?.role === 'admin' ? 'selected' : ''}>ADMIN</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase opacity-40 mb-2 tracking-widest ml-1">Status</label>
+                        <select name="is_active" class="modal-input font-bold" ${isEditingSelf ? 'disabled' : ''}>
+                            <option value="1" ${userData?.is_active == 1 ? 'selected' : ''}>ACTIVE</option>
+                            <option value="0" ${userData?.is_active == 0 ? 'selected' : ''}>DISABLED</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black uppercase opacity-40 mb-2 tracking-widest ml-1">
+                        ${userData ? 'New Password (Optional)' : 'Password'}
+                    </label>
+                    <input type="password" name="password" class="modal-input font-bold" ${userData ? '' : 'required'}>
+                </div>
+            </form>
+
+            <style>
+                .modal-input {
+                    width: 100%; padding: 14px; border-radius: 16px; 
+                    border: 2px solid ${isDark ? "#374151" : "#f1f5f9"};
+                    background: ${isDark ? "#111827" : "#f8fafc"};
+                    color: inherit; outline: none; transition: all 0.2s;
+                }
+                .modal-input:focus { border-color: ${themeColor}; box-shadow: 0 0 0 4px ${themeColor}15; }
+            </style>
+        `,
+        showCancelButton: true,
+        confirmButtonText: userData ? "Update User" : "Create User",
+        confirmButtonColor: themeColor,
+        preConfirm: async () => {
+            const formData = new FormData(document.getElementById("userForm"));
+            const action = userData ? "edit" : "create";
+            try {
+                const response = await fetch(`user_actions.php?action=${action}`, {
+                    method: "POST",
+                    body: formData
+                });
+                const result = await response.json();
+                if (!result.success) throw new Error(result.message);
+                return result;
+            } catch (error) {
+                Swal.showValidationMessage(`Error: ${error.message}`);
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({ icon: 'success', title: 'Success', timer: 1000, showConfirmButton: false })
+            .then(() => location.reload());
+        }
+    });
+}
+
+//The Disable Logic: disableUser
+async function disableUser(id, username) {
+    const isDark = document.body.classList.contains("dark");
+    const result = await Swal.fire({
+        title: `Disable @${username}?`,
+        text: "User will no longer be able to log in.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#ef4444",
+        confirmButtonText: "Yes, Disable",
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#ffffff" : "#1f2937"
+    });
+
+    if (result.isConfirmed) {
+        const formData = new FormData();
+        formData.append('id', id);
+        const response = await fetch('../admin/user_actions.php?action=delete', { method: 'POST', body: formData });
+        const res = await response.json();
+        if(res.success) location.reload();
+        else Swal.fire("Error", res.message, "error");
+    }
+}
+
 // Ask the user for confirmation before logging out
 function confirmLogout(username) {
   const isDark =
@@ -492,7 +871,7 @@ function confirmLogout(username) {
 // auto-logout feature with a warning (Idle Timer, Logout Timer)
 // Use 'var' or a window check to prevent "Already Declared" errors
 if (typeof IDLE_TIME_LIMIT === "undefined") {
-  var IDLE_TIME_LIMIT = 1 * 60 * 1000; // 1 Minute
+  var IDLE_TIME_LIMIT = 10 * 60 * 1000; // 10 Minute
   var WARNING_SECONDS = 10;
   var idleTimer;
   var warningTimer;
@@ -571,3 +950,56 @@ if (!window.idleEventsInitialized) {
 
 // Initialize on page load
 resetTimers();
+
+//This function will show a confirmation dialog before freeing up the room
+async function ajaxCheckout(id, roomNumber) {
+  const result = await Swal.fire({
+    title: "Confirm Checkout?",
+    text: `Room ${roomNumber} will be set to Available and tenant data will be cleared.`,
+    icon: "info",
+    showCancelButton: true,
+    confirmButtonColor: "#10b981",
+    confirmButtonText: "Yes, Checkout",
+  });
+
+  if (result.isConfirmed) {
+    try {
+      const formData = new FormData();
+      formData.append("id", id);
+
+      const response = await fetch("room_actions.php?action=checkout", {
+        method: "POST",
+        body: formData,
+      });
+
+      // --- IMPROVED ERROR HANDLING ---
+      const text = await response.text(); // Read as text first
+      let resData;
+
+      try {
+        resData = JSON.parse(text); // Try to turn it into JSON
+      } catch (jsonError) {
+        console.error("SERVER CRASHED. Raw Response:", text);
+        throw new Error(
+          "The server sent an invalid response. Check the Network tab in DevTools.",
+        );
+      }
+      // -------------------------------
+
+      if (resData.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Checked Out!",
+          text: resData.message,
+          timer: 2000,
+          showConfirmButton: false,
+        }).then(() => location.reload());
+      } else {
+        Swal.fire("Error", resData.message, "error");
+      }
+    } catch (err) {
+      console.error("Fetch Error:", err);
+      Swal.fire("Error", err.message, "error");
+    }
+  }
+}

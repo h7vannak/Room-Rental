@@ -22,10 +22,10 @@ $types = $result->fetch_all(MYSQLI_ASSOC);
             </h1>
             <p class="text-sm opacity-60">Manage pricing and classification for your rooms</p>
         </div>
-        <a href="room_type_create.php"
+        <button onclick="openRoomTypeModal()"
             class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl transition shadow-lg shadow-blue-500/30 flex items-center gap-2">
-            <i class="fa-solid fa-plus"></i> Add Category
-        </a>
+            <i class="fa-solid fa-plus"></i> Add New
+        </button>
     </div>
 
     <?php if (isset($_SESSION['msg'])): ?>
@@ -73,17 +73,17 @@ $types = $result->fetch_all(MYSQLI_ASSOC);
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex justify-center gap-2">
-                                    <a href="room_type_edit.php?id=<?= $t['room_type_id'] ?>"
+                                    <button onclick='openRoomTypeModal(<?= json_encode($t) ?>)'
                                         class="p-2 hover:bg-blue-500/20 text-blue-500 rounded-lg transition"
                                         title="Edit Settings">
                                         <i class="fa-solid fa-pen-to-square"></i>
-                                    </a>
-                                    <a href="room_type_delete.php?id=<?= $t['room_type_id'] ?>"
-                                        onclick="return confirm('Deleting this type will affect all rooms assigned to it. Proceed?')"
+                                    </button>
+                                    <button
+                                        onclick="ajaxDelete(<?= $t['room_type_id'] ?>, 'room_type_actions.php', this.closest('tr'))"
                                         class="p-2 hover:bg-red-500/20 text-red-500 rounded-lg transition"
-                                        title="Delete Category">
+                                        title="Delete Room Type">
                                         <i class="fa-solid fa-trash"></i>
-                                    </a>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
