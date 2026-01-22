@@ -62,7 +62,7 @@ foreach ($history as $h) {
 }
 ?>
 
-<div class="p-8 max-w-7xl mx-auto">
+<div class="px-8 max-w-full mx-auto">
     <div class="mb-8 flex justify-between items-end">
         <div>
             <h1

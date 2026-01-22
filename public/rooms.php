@@ -40,7 +40,7 @@ foreach ($rooms as $r) {
 $availableCount = $totalRooms - $occupiedCount;
 ?>
 
-<div class="p-8 max-w-7xl mx-auto">
+<div class="px-8 max-w-full mx-auto">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
             <h1 class="text-3xl font-black tracking-tight <?= $isDark ? 'text-white' : 'text-slate-900' ?>">

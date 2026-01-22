@@ -79,6 +79,7 @@ $T = file_exists($langFile) ? include $langFile : include "../lang/en.php";
         <nav :class="sidebarExpanded ? 'w-1/6' : 'w-20'"
             class="sticky top-0 h-screen overflow-y-auto text-white transition-all duration-300 z-50 dark:bg-gray-800 dark:border-r dark:border-gray-700 bg-blue-700 flex flex-col">
             <div class="p-4 flex flex-col gap-6">
+                <!-- Logo -->
                 <div :class="sidebarExpanded ? 'flex-row justify-between' : 'flex-col gap-y-2'"
                     class="flex items-center">
                     <a href="../public/index.php"
@@ -96,24 +97,25 @@ $T = file_exists($langFile) ? include $langFile : include "../lang/en.php";
                     </button>
                 </div>
 
+                <!-- Menu Sidebar -->
                 <div class="flex flex-col space-y-2">
+                    <!-- Dashboard -->
                     <div>
-                        <!-- <p x-show="sidebarExpanded"
-                            class="px-4 mb-2 text-[10px] uppercase tracking-widest text-white/50 font-bold">Main</p> -->
                         <a href="../public/index.php"
                             class="px-4 py-2 flex items-center gap-3 rounded-lg transition <?= $currentPage == 'index.php' ? 'bg-white text-blue-700 font-bold' : 'hover:bg-white/10' ?>">
                             <i class="fa-solid fa-gauge w-5 text-center"></i>
-                            <span x-show="sidebarExpanded">Dashboard</span>
+                            <span x-show="sidebarExpanded"><?= $T['dashboard'] ?? 'Dashboard' ?></span>
                         </a>
                     </div>
 
+                    <!-- Tenant Info -->
                     <div
                         x-data="{ open: <?= in_array($currentPage, ['nationalities.php', 'renter_documents.php', 'renters.php']) ? 'true' : 'false' ?> }">
                         <button @click="open = !open; sidebarExpanded = true"
                             class="w-full px-4 py-2 flex items-center justify-between rounded-lg hover:bg-white/10 transition <?= in_array($currentPage, ['nationalities.php', 'renter_documents.php', 'renters.php']) ? 'bg-white/5' : '' ?>">
                             <div class="flex items-center gap-3">
                                 <i class="fa-solid fa-address-card w-5 text-center"></i>
-                                <span x-show="sidebarExpanded">Tenant Info</span>
+                                <span x-show="sidebarExpanded"><?= $T['tenant_info'] ?? 'Tenant' ?></span>
                             </div>
                             <i x-show="sidebarExpanded"
                                 class="fa-solid fa-chevron-down text-[10px] transition-transform"
@@ -123,21 +125,22 @@ $T = file_exists($langFile) ? include $langFile : include "../lang/en.php";
                             <a href="../public/nationalities.php"
                                 class="flex items-center gap-3 px-4 py-2 text-sm transition-all <?= $currentPage == 'nationalities.php' ? 'text-white font-bold opacity-100' : 'opacity-60 hover:opacity-100 hover:translate-x-1' ?>">
                                 <i class="fa-solid fa-earth-asia w-4 text-center text-[12px]"></i>
-                                <span>Nationalities</span>
+                                <span><?= $T['nationalities'] ?? 'Nationalities' ?></span>
                             </a>
                             <a href="../public/renter_documents.php"
                                 class="flex items-center gap-3 px-4 py-2 text-sm transition-all <?= $currentPage == 'renter_documents.php' ? 'text-white font-bold opacity-100' : 'opacity-60 hover:opacity-100 hover:translate-x-1' ?>">
                                 <i class="fa-solid fa-folder-tree w-4 text-center text-[12px]"></i>
-                                <span>Digital Archive</span>
+                                <span><?= $T['documents'] ?? 'Documents' ?></span>
                             </a>
                             <a href="../public/renters.php"
                                 class="flex items-center gap-3 px-4 py-2 text-sm transition-all <?= $currentPage == 'renters.php' ? 'text-white font-bold opacity-100' : 'opacity-60 hover:opacity-100 hover:translate-x-1' ?>">
                                 <i class="fa-solid fa-users-viewfinder w-4 text-center text-[12px]"></i>
-                                <span>Renters List</span>
+                                <span><?= $T['renters'] ?? 'Renters' ?></span>
                             </a>
                         </div>
                     </div>
 
+                    <!-- Rooms Management -->
                     <div
                         x-data="{ open: <?= in_array($currentPage, ['rooms.php', 'room_types.php', 'room_history.php', 'room_type_reassign.php']) ? 'true' : 'false' ?> }">
                         <button @click="open = !open; sidebarExpanded = true"
@@ -154,36 +157,37 @@ $T = file_exists($langFile) ? include $langFile : include "../lang/en.php";
                             <a href="../public/rooms.php"
                                 class="flex items-center gap-3 px-4 py-2 text-sm transition-all <?= $currentPage == 'rooms.php' ? 'text-white font-bold opacity-100' : 'opacity-60 hover:opacity-100 hover:translate-x-1' ?>">
                                 <i class="fa-solid fa-list-check w-4 text-center text-[12px]"></i>
-                                <span>All Rooms</span>
+                                <span><?= $T['rooms'] ?? 'Rooms' ?></span>
                             </a>
                             <?php if ($isAdmin): ?>
                                 <a href="../public/room_types.php"
                                     class="flex items-center gap-3 px-4 py-2 text-sm transition-all <?= $currentPage == 'room_types.php' ? 'text-white font-bold opacity-100' : 'opacity-60 hover:opacity-100 hover:translate-x-1' ?>">
                                     <i class="fa-solid fa-tags w-4 text-center text-[12px]"></i>
-                                    <span>Room Types</span>
+                                    <span><?= $T['room_types'] ?? 'Room_Types' ?></span>
                                 </a>
 
                                 <a href="../public/room_type_reassign.php"
                                     class="flex items-center gap-3 px-4 py-2 text-sm transition-all <?= $currentPage == 'room_type_reassign.php' ? 'text-white font-bold opacity-100' : 'opacity-60 hover:opacity-100 hover:translate-x-1' ?>">
                                     <i class="fa-solid fa-right-left w-4 text-center text-[12px]"></i>
-                                    <span>Room Type Reassign</span>
+                                    <span><?= $T['room_type_reassign'] ?? 'Room_Type_Reassign' ?></span>
                                 </a>
                             <?php endif; ?>
                             <a href="../public/room_history.php"
                                 class="flex items-center gap-3 px-4 py-2 text-sm transition-all <?= $currentPage == 'room_history.php' ? 'text-white font-bold opacity-100' : 'opacity-60 hover:opacity-100 hover:translate-x-1' ?>">
                                 <i class="fa-solid fa-clock-rotate-left w-4 text-center text-[12px]"></i>
-                                <span>History</span>
+                                <span><?= $T['history'] ?? 'History' ?></span>
                             </a>
                         </div>
                     </div>
 
+                    <!-- Finance -->
                     <div
                         x-data="{ open: <?= in_array($currentPage, ['utility_rates.php', 'bills.php', 'payments.php']) ? 'true' : 'false' ?> }">
                         <button @click="open = !open; sidebarExpanded = true"
                             class="w-full px-4 py-2 flex items-center justify-between rounded-lg hover:bg-white/10 transition <?= in_array($currentPage, ['utility_rates.php', 'bills.php', 'payments.php']) ? 'bg-white/5' : '' ?>">
                             <div class="flex items-center gap-3">
                                 <i class="fa-solid fa-dollar-sign w-5 text-center"></i>
-                                <span x-show="sidebarExpanded">Finance</span>
+                                <span x-show="sidebarExpanded"><?= $T['finance'] ?? 'Finance' ?></span>
                             </div>
                             <i x-show="sidebarExpanded"
                                 class="fa-solid fa-chevron-down text-[10px] transition-transform"
@@ -194,7 +198,7 @@ $T = file_exists($langFile) ? include $langFile : include "../lang/en.php";
                                 <a href="../public/utility_rates.php"
                                     class="flex items-center gap-3 px-4 py-2 text-sm transition-all <?= $currentPage == 'utility_rates.php' ? 'text-white font-bold opacity-100' : 'opacity-60 hover:opacity-100 hover:translate-x-1' ?>">
                                     <i class="fa-solid fa-earth-asia w-4 text-center text-[12px]"></i>
-                                    <span>Utility Rates</span>
+                                    <span><?= $T['utility_rates'] ?? 'Utility_Rates' ?></span>
                                 </a>
                             <?php endif; ?>
                             <a href="../public/bills.php"
@@ -210,6 +214,7 @@ $T = file_exists($langFile) ? include $langFile : include "../lang/en.php";
                         </div>
                     </div>
 
+                    <!-- Administration -->
                     <?php if ($isAdmin): ?>
                         <div
                             x-data="{ open: <?= in_array($currentPage, ['users.php', 'system_settings.php', 'audit_logs.php', 'preferences.php']) ? 'true' : 'false' ?> }">
@@ -217,7 +222,7 @@ $T = file_exists($langFile) ? include $langFile : include "../lang/en.php";
                                 class="w-full px-4 py-2 flex items-center justify-between rounded-lg hover:bg-white/10 transition <?= in_array($currentPage, ['users.php', 'system_settings.php']) ? 'bg-white/5' : '' ?>">
                                 <div class="flex items-center gap-3">
                                     <i class="fa-solid fa-user-shield w-5 text-center"></i>
-                                    <span x-show="sidebarExpanded">Administration</span>
+                                    <span x-show="sidebarExpanded"><?= $T['administration'] ?? 'Admin' ?></span>
                                 </div>
                                 <i x-show="sidebarExpanded"
                                     class="fa-solid fa-chevron-down text-[10px] transition-transform"
@@ -227,22 +232,22 @@ $T = file_exists($langFile) ? include $langFile : include "../lang/en.php";
                                 <a href="../admin/users.php"
                                     class="flex items-center gap-3 px-4 py-2 text-sm transition-all <?= $currentPage == 'users.php' ? 'text-white font-bold opacity-100' : 'opacity-60 hover:opacity-100 hover:translate-x-1' ?>">
                                     <i class="fa-solid fa-users w-4 text-center text-[12px]"></i>
-                                    <span>Users</span>
+                                    <span><?= $T['users'] ?? 'Users' ?></span>
                                 </a>
                                 <a href="../admin/system_settings.php"
                                     class="flex items-center gap-3 px-4 py-2 text-sm transition-all <?= $currentPage == 'system_settings.php' ? 'text-white font-bold opacity-100' : 'opacity-60 hover:opacity-100 hover:translate-x-1' ?>">
                                     <i class="fa-solid fa-gears w-4 text-center text-[12px]"></i>
-                                    <span>Settings</span>
+                                    <span><?= $T['settings'] ?? 'Settings' ?></span>
                                 </a>
                                 <a href="../admin/preferences.php"
                                     class="flex items-center gap-3 px-4 py-2 text-sm transition-all <?= $currentPage == 'preferences.php' ? 'text-white font-bold opacity-100' : 'opacity-60 hover:opacity-100 hover:translate-x-1' ?>">
                                     <i class="fa-solid fa-user-gear w-4 text-center text-[12px]"></i>
-                                    <span>Preferences</span>
+                                    <span><?= $T['preferences'] ?? 'Preferences' ?></span>
                                 </a>
                                 <a href="../public/audit_logs.php"
                                     class="flex items-center gap-3 px-4 py-2 text-sm transition-all <?= $currentPage == 'audit_logs.php' ? 'text-white font-bold opacity-100' : 'opacity-60 hover:opacity-100 hover:translate-x-1' ?>">
                                     <i class="fa-solid fa-clipboard-list w-4 text-center text-[12px]"></i>
-                                    <span>Audit Logs</span>
+                                    <span><?= $T['audit_logs'] ?? 'Audit_Logs' ?></span>
                                 </a>
                             </div>
                         </div>
@@ -267,12 +272,12 @@ $T = file_exists($langFile) ? include $langFile : include "../lang/en.php";
                     <div class="flex items-center bg-black/10 rounded-lg p-1">
                         <button onclick="updatePref('language', 'en')"
                             class="p-2 text-xs rounded transition <?= ($lang === 'en') ? 'bg-white text-blue-600 font-bold shadow-sm' : 'hover:bg-white/20 text-white' ?>">
-                            EN
+                            <?= $T['english'] ?? 'English' ?>
                         </button>
 
                         <button onclick="updatePref('language', 'km')"
                             class="p-2 text-xs rounded transition <?= ($lang === 'km') ? 'bg-white text-blue-600 font-bold shadow-sm' : 'hover:bg-white/20 text-white' ?>">
-                            KM
+                            <?= $T['khmer'] ?? 'Khmer' ?>
                         </button>
                     </div>
                     <div>

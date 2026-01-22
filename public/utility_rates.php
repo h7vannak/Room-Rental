@@ -9,7 +9,7 @@ $result = $conn->query($sql);
 $rates = $result->fetch_all(MYSQLI_ASSOC);
 ?>
 
-<div class="p-8 max-w-7xl mx-auto min-h-screen">
+<div class="px-8 max-w-full mx-auto">
     <div class="flex justify-between items-center mb-10">
         <div>
             <h1 class="text-4xl font-black <?= $isDark ? 'text-white' : 'text-slate-900' ?>">Utility Rates</h1>

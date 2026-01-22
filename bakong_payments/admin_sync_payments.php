@@ -42,7 +42,7 @@ $sql = "SELECT mb.*, rt.base_room_fee, ur.electric_rate, ur.water_rate
         JOIN rooms rm ON mb.room_id = rm.room_id
         JOIN room_types rt ON rm.room_type_id = rt.room_type_id
         JOIN utility_rates ur ON mb.rate_id = ur.rate_id
-        WHERE mb.paid = 0";
+        WHERE mb.is_paid = 0";
 
 $result = $conn->query($sql);
 
@@ -90,7 +90,7 @@ if ($result->num_rows > 0) {
 
             try {
                 // 1. SQL FIXED: Pluralized monthly_bills
-                $updateBill = $conn->prepare("UPDATE monthly_bills SET paid = 1 WHERE bill_id = ?");
+                $updateBill = $conn->prepare("UPDATE monthly_bills SET is_paid = 1 WHERE bill_id = ?");
                 $updateBill->bind_param("i", $bill['bill_id']);
                 $updateBill->execute();
 

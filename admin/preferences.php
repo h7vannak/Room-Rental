@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include '../includes/header.php';
 ?>
 
-<div class="p-8 max-w-7xl mx-auto flex flex-col items-center justify-center">
+<div class="px-8 max-w-7xl mx-auto flex flex-col items-center justify-center">
     <div class="w-full max-w-md">
         
         <div class="mb-8 text-center">

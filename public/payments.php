@@ -26,7 +26,7 @@ $result = $conn->query($sql);
 $payments = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 ?>
 
-<div class="p-8 max-w-7xl mx-auto min-h-screen">
+<div class="px-8 max-w-full mx-auto">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
         <div>
             <h1 class="text-4xl font-black tracking-tight <?= $isDark ? 'text-white' : 'text-slate-900' ?>">

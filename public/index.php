@@ -15,14 +15,14 @@ $currentYear = date('Y');
 
 // Fixed: Changed 'room' to 'rooms' and 'renter' to 'renters'
 $overdueSql = "
-SELECT rm.room_number, r.renter_name, r.mobile_phone, mb.paid
+SELECT rm.room_number, r.renter_name, r.mobile_phone, mb.is_paid
 FROM rooms rm
 JOIN renters r ON rm.renter_id = r.renter_id
 LEFT JOIN monthly_bills mb ON rm.room_id = mb.room_id 
     AND MONTH(mb.bill_month) = ? 
     AND YEAR(mb.bill_month) = ?
 WHERE rm.status = 'ACTIVE' 
-AND (mb.paid = 0 OR mb.paid IS NULL)
+AND (mb.is_paid = 0 OR mb.is_paid IS NULL)
 ";
 
 $oStmt = $conn->prepare($overdueSql);
@@ -40,7 +40,7 @@ $selectedMonth = $_GET['month'] ?? '';
 /* ===============================
     BUILD WHERE CLAUSE
 ================================ */
-$where = ["mb.paid = 1"];
+$where = ["mb.is_paid = 1"];
 $params = [];
 $types = "";
 
@@ -104,11 +104,11 @@ $activeRooms = $activeRoomsRes->fetch_assoc()['count'];
 $occupancyRate = $totalRooms > 0 ? round(($activeRooms / $totalRooms) * 100, 1) : 0;
 ?>
 
-<div class="p-8 max-w-7xl mx-auto">
+<div class="px-8 max-w-full mx-auto">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-            <h1 class="text-3xl font-black tracking-tight">Financial Dashboard</h1>
-            <p class="text-sm opacity-50 italic">Overview of rentals, occupancy, and revenue.</p>
+            <h1 class="text-3xl font-black tracking-tight"><?= $T['index'] ?? 'Index' ?></h1>
+            <p class="text-sm opacity-50 italic"><?= $T['overview'] ?? 'Overview' ?></p>
         </div>
 
         <div class="flex gap-2">

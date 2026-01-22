@@ -71,7 +71,7 @@ $documents = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 include '../includes/header.php';
 ?>
 
-<div class="p-8 max-w-7xl mx-auto min-h-screen">
+<div class="px-8 max-w-full mx-auto">
     <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
         <div>
             <h1 class="text-4xl font-black tracking-tight <?= $isDark ? 'text-white' : 'text-slate-900' ?>">Digital Archive</h1>

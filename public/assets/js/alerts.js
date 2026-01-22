@@ -871,7 +871,7 @@ function confirmLogout(username) {
 // auto-logout feature with a warning (Idle Timer, Logout Timer)
 // Use 'var' or a window check to prevent "Already Declared" errors
 if (typeof IDLE_TIME_LIMIT === "undefined") {
-  var IDLE_TIME_LIMIT = 10 * 60 * 1000; // 10 Minute
+  var IDLE_TIME_LIMIT = 3 * 60 * 1000; // 3 Minute
   var WARNING_SECONDS = 10;
   var idleTimer;
   var warningTimer;

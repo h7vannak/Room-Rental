@@ -45,9 +45,9 @@ $summaryMonth = $monthFilter ?: date('Y-m');
 // FIXED: Pluralized rooms, room_types, utility_rates
 $summarySQL = "
     SELECT 
-        SUM(CASE WHEN mb.paid = 1 THEN 1 ELSE 0 END) as paid_count,
-        SUM(CASE WHEN mb.paid = 0 THEN 1 ELSE 0 END) as pending_count,
-        SUM(CASE WHEN mb.paid = 1 THEN (
+        SUM(CASE WHEN mb.is_paid = 1 THEN 1 ELSE 0 END) as paid_count,
+        SUM(CASE WHEN mb.is_paid = 0 THEN 1 ELSE 0 END) as pending_count,
+        SUM(CASE WHEN mb.is_paid = 1 THEN (
             rt.base_room_fee + 
             (GREATEST(0, mb.new_electric - mb.old_electric) * ur.electric_rate) + 
             (mb.water_units * ur.water_rate)
@@ -114,7 +114,7 @@ $ratesQuery = $conn->query("SELECT * FROM utility_rates ORDER BY rate_id DESC");
 $ratesData = $ratesQuery ? $ratesQuery->fetch_all(MYSQLI_ASSOC) : [];
 ?>
 
-<div class="p-8 max-w-7xl mx-auto">
+<div class="px-8 max-w-full mx-auto">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
             <h1 class="text-4xl font-black tracking-tight">Financial Records</h1>
@@ -243,7 +243,7 @@ $ratesData = $ratesQuery ? $ratesQuery->fetch_all(MYSQLI_ASSOC) : [];
                                 <p class="font-black text-blue-600 text-lg">$<?= number_format($b['total'], 2) ?></p>
                             </td>
                             <td class="px-6 py-6 text-center">
-                                <?php if ($b['paid']): ?>
+                                <?php if ($b['is_paid']): ?>
                                     <span
                                         class="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-700 text-[10px] font-black px-4 py-1.5 rounded-full ring-1 ring-emerald-200">
                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> PAID
@@ -262,7 +262,7 @@ $ratesData = $ratesQuery ? $ratesQuery->fetch_all(MYSQLI_ASSOC) : [];
                                         <i class="fa-solid fa-file-invoice"></i> Receipt
                                     </a>
 
-                                    <?php if (!$b['paid']): ?>
+                                    <?php if (!$b['is_paid']): ?>
                                         <div class="relative group/menu">
                                             <button class="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400">
                                                 <i class="fa-solid fa-ellipsis-vertical"></i>
