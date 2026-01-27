@@ -25,7 +25,7 @@ try {
 
         if ($bill_id) {
             // 1. Update Existing Bill
-            $stmt = $conn->prepare("UPDATE monthly_bills SET bill_month=?, old_electric=?, new_electric=?, water_units=?, rate_id=? WHERE bill_id=? AND paid=0");
+            $stmt = $conn->prepare("UPDATE monthly_bills SET bill_month=?, old_electric=?, new_electric=?, water_units=?, rate_id=? WHERE bill_id=? AND is_paid=0");
             $stmt->bind_param("sdddii", $bill_month, $old_electric, $new_electric, $water_units, $rate_id, $bill_id);
             $stmt->execute();
 
@@ -88,7 +88,7 @@ try {
         // Also delete any pending payments associated with this bill
         $conn->query("DELETE FROM payments WHERE bill_id = $id AND status != 'SUCCESS'");
 
-        $stmt = $conn->prepare("DELETE FROM monthly_bills WHERE bill_id = ? AND paid = 0");
+        $stmt = $conn->prepare("DELETE FROM monthly_bills WHERE bill_id = ? AND is_paid = 0");
         $stmt->bind_param("i", $id);
         $stmt->execute();
 

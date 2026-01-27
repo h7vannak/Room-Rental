@@ -210,7 +210,7 @@ function openBillModal(billData = null) {
                         ${rooms
                           .map(
                             (r) => `
-                            <option value="${r.room_id}" data-old="${r.last_e || 0}" ${billData?.room_id == r.room_id ? "selected" : ""}>
+                            <option value="${r.room_id}" data-old="${r.last_e}" ${billData?.room_id == r.room_id ? "selected" : ""}>
                                 Room ${r.room_number} (${r.renter_name})
                             </option>
                         `,
@@ -245,7 +245,7 @@ function openBillModal(billData = null) {
                     <div class="space-y-2">
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-[9px] font-black opacity-40 uppercase">Prev</span>
-                            <input type="number" id="modal_old_electric" name="old_electric" class="modal-input pl-12 bg-white/50" value="${billData?.old_electric || 0}" readonly>
+                            <input type="number" id="modal_old_electric" name="old_electric" class="modal-input pl-12 bg-white/50" value="${billData ? billData.old_electric : 0}" readonly>
                         </div>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-[9px] font-black opacity-40 uppercase">New</span>
@@ -310,10 +310,28 @@ function openBillModal(billData = null) {
 
 // Logic to auto-fill old electricity reading in modal
 function updatePrevReading(selectElement) {
-  const selectedOption = selectElement.options[selectElement.selectedIndex];
-  const oldReading = selectedOption.getAttribute("data-old") || 0;
-  const oldInput = document.getElementById("modal_old_electric");
-  if (oldInput) oldInput.value = oldReading;
+    // 1. Get the actual <option> element that is selected
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    
+    // 2. Get the 'data-old' value we put there in the PHP loop
+    const lastReading = selectedOption.getAttribute("data-old");
+    
+    // 3. Find the input field in the modal
+    const oldInput = document.getElementById("modal_old_electric");
+    
+    if (oldInput) {
+        // Use 0.00 if the attribute is missing or null
+        const finalValue = (lastReading && lastReading !== "null") ? lastReading : "0.00";
+        
+        // Update the visible value
+        oldInput.value = finalValue;
+
+        // Visual feedback: a subtle flash to show it updated
+        oldInput.classList.add('bg-blue-100');
+        setTimeout(() => oldInput.classList.remove('bg-blue-100'), 400);
+        
+        console.log(`Room ${selectedOption.text} selected. Prev Reading: ${finalValue}`);
+    }
 }
 
 // NEW: EDIT/CREATE Renter Modal Handler
@@ -564,17 +582,19 @@ function openRoomModal(roomData = null) {
 
 //NEW: EDIT/CREATE Room type Modal Handler
 function openRoomTypeModal(typeData = null) {
-    const isDark = document.body.classList.contains("dark") || document.documentElement.classList.contains("dark");
-    const themeColor = typeData ? "#10b981" : "#3b82f6"; // Emerald for Edit, Blue for Create
+  const isDark =
+    document.body.classList.contains("dark") ||
+    document.documentElement.classList.contains("dark");
+  const themeColor = typeData ? "#10b981" : "#3b82f6"; // Emerald for Edit, Blue for Create
 
-    Swal.fire({
-        title: typeData ? "Edit Room Category" : "New Room Category",
-        width: "500px",
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#ffffff" : "#1f2937",
-        padding: "1.5rem",
-        customClass: { popup: "rounded-[2.5rem]" },
-        html: `
+  Swal.fire({
+    title: typeData ? "Edit Room Category" : "New Room Category",
+    width: "500px",
+    background: isDark ? "#1f2937" : "#ffffff",
+    color: isDark ? "#ffffff" : "#1f2937",
+    padding: "1.5rem",
+    customClass: { popup: "rounded-[2.5rem]" },
+    html: `
             <form id="roomTypeForm" class="text-left space-y-5 mt-6 px-2">
                 <input type="hidden" name="id" value="${typeData?.room_type_id || ""}">
                 
@@ -610,59 +630,64 @@ function openRoomTypeModal(typeData = null) {
                 }
             </style>
         `,
-        showCancelButton: true,
-        confirmButtonText: typeData ? "Save Changes" : "Create Category",
-        confirmButtonColor: themeColor,
-        cancelButtonColor: isDark ? "#4b5563" : "#94a3b8",
-        reverseButtons: true,
-        preConfirm: async () => {
-            const form = document.getElementById("roomTypeForm");
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return false;
-            }
+    showCancelButton: true,
+    confirmButtonText: typeData ? "Save Changes" : "Create Category",
+    confirmButtonColor: themeColor,
+    cancelButtonColor: isDark ? "#4b5563" : "#94a3b8",
+    reverseButtons: true,
+    preConfirm: async () => {
+      const form = document.getElementById("roomTypeForm");
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return false;
+      }
 
-            const formData = new FormData(form);
-            const actionParam = typeData ? "edit" : "create";
+      const formData = new FormData(form);
+      const actionParam = typeData ? "edit" : "create";
 
-            try {
-                const response = await fetch(`room_type_actions.php?action=${actionParam}`, {
-                    method: "POST",
-                    body: formData,
-                });
-                const result = await response.json();
-                if (!result.success) throw new Error(result.message || "Submit failed");
-                return result;
-            } catch (error) {
-                Swal.showValidationMessage(`Error: ${error.message}`);
-            }
-        },
-    }).then((result) => {
-        if (result.isConfirmed && result.value?.success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Success',
-                text: result.value.message,
-                timer: 1500,
-                showConfirmButton: false
-            }).then(() => location.reload());
-        }
-    });
+      try {
+        const response = await fetch(
+          `room_type_actions.php?action=${actionParam}`,
+          {
+            method: "POST",
+            body: formData,
+          },
+        );
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message || "Submit failed");
+        return result;
+      } catch (error) {
+        Swal.showValidationMessage(`Error: ${error.message}`);
+      }
+    },
+  }).then((result) => {
+    if (result.isConfirmed && result.value?.success) {
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: result.value.message,
+        timer: 1500,
+        showConfirmButton: false,
+      }).then(() => location.reload());
+    }
+  });
 }
 
 //NEW: EDIT/CREATE Utility Rate Modal Handler
 function openUtilityRateModal(rateData = null) {
-    const isDark = document.body.classList.contains("dark") || document.documentElement.classList.contains("dark");
-    const themeColor = rateData ? "#10b981" : "#3b82f6";
+  const isDark =
+    document.body.classList.contains("dark") ||
+    document.documentElement.classList.contains("dark");
+  const themeColor = rateData ? "#10b981" : "#3b82f6";
 
-    Swal.fire({
-        title: rateData ? "Edit Utility Rate" : "Set New Utility Rates",
-        width: "550px",
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#ffffff" : "#1f2937",
-        padding: "1.5rem",
-        customClass: { popup: "rounded-[2.5rem]" },
-        html: `
+  Swal.fire({
+    title: rateData ? "Edit Utility Rate" : "Set New Utility Rates",
+    width: "550px",
+    background: isDark ? "#1f2937" : "#ffffff",
+    color: isDark ? "#ffffff" : "#1f2937",
+    padding: "1.5rem",
+    customClass: { popup: "rounded-[2.5rem]" },
+    html: `
             <form id="utilityForm" class="text-left space-y-5 mt-6 px-2">
                 <input type="hidden" name="id" value="${rateData?.rate_id || ""}">
                 
@@ -685,7 +710,7 @@ function openUtilityRateModal(rateData = null) {
 
                 <div>
                     <label class="block text-[10px] font-black uppercase opacity-40 mb-2 tracking-[0.2em] ml-1">Effective Date</label>
-                    <input type="date" name="effective_date" class="modal-input font-bold" value="${rateData?.effective_date || new Date().toISOString().split('T')[0]}" required>
+                    <input type="date" name="effective_date" class="modal-input font-bold" value="${rateData?.effective_date || new Date().toISOString().split("T")[0]}" required>
                 </div>
             </form>
 
@@ -699,47 +724,57 @@ function openUtilityRateModal(rateData = null) {
                 .modal-input:focus { border-color: ${themeColor}; box-shadow: 0 0 0 4px ${themeColor}15; }
             </style>
         `,
-        showCancelButton: true,
-        confirmButtonText: rateData ? "Update Rates" : "Activate Rates",
-        confirmButtonColor: themeColor,
-        preConfirm: async () => {
-            const formData = new FormData(document.getElementById("utilityForm"));
-            const action = rateData ? "edit" : "create";
-            try {
-                const response = await fetch(`utility_rate_actions.php?action=${action}`, {
-                    method: "POST",
-                    body: formData
-                });
-                const result = await response.json();
-                if (!result.success) throw new Error(result.message);
-                return result;
-            } catch (error) {
-                Swal.showValidationMessage(`Error: ${error.message}`);
-            }
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            Swal.fire({ icon: 'success', title: 'Success', timer: 1000, showConfirmButton: false })
-            .then(() => location.reload());
-        }
-    });
+    showCancelButton: true,
+    confirmButtonText: rateData ? "Update Rates" : "Activate Rates",
+    confirmButtonColor: themeColor,
+    preConfirm: async () => {
+      const formData = new FormData(document.getElementById("utilityForm"));
+      const action = rateData ? "edit" : "create";
+      try {
+        const response = await fetch(
+          `utility_rate_actions.php?action=${action}`,
+          {
+            method: "POST",
+            body: formData,
+          },
+        );
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message);
+        return result;
+      } catch (error) {
+        Swal.showValidationMessage(`Error: ${error.message}`);
+      }
+    },
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        timer: 1000,
+        showConfirmButton: false,
+      }).then(() => location.reload());
+    }
+  });
 }
 
 //NEW: EDIT/CREATE User Modal Handler
 function openUserModal(userData = null) {
-    const isDark = document.body.classList.contains("dark") || document.documentElement.classList.contains("dark");
-    const currentUserId = window.AUTH_USER_ID;
-    const isEditingSelf = userData && parseInt(userData.user_id) === currentUserId;
-    const themeColor = userData ? "#10b981" : "#3b82f6";
+  const isDark =
+    document.body.classList.contains("dark") ||
+    document.documentElement.classList.contains("dark");
+  const currentUserId = window.AUTH_USER_ID;
+  const isEditingSelf =
+    userData && parseInt(userData.user_id) === currentUserId;
+  const themeColor = userData ? "#10b981" : "#3b82f6";
 
-    Swal.fire({
-        title: userData ? "Edit User Profile" : "Create New Account",
-        width: "500px",
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#ffffff" : "#1f2937",
-        padding: "1.5rem",
-        customClass: { popup: "rounded-[2.5rem]" },
-        html: `
+  Swal.fire({
+    title: userData ? "Edit User Profile" : "Create New Account",
+    width: "500px",
+    background: isDark ? "#1f2937" : "#ffffff",
+    color: isDark ? "#ffffff" : "#1f2937",
+    padding: "1.5rem",
+    customClass: { popup: "rounded-[2.5rem]" },
+    html: `
             <form id="userForm" class="text-left space-y-4 mt-6 px-2">
                 <input type="hidden" name="id" value="${userData?.user_id || ""}">
                 
@@ -752,24 +787,24 @@ function openUserModal(userData = null) {
                     <div>
                         <label class="block text-[10px] font-black uppercase opacity-40 mb-2 tracking-widest ml-1">Role</label>
                         <select name="role" class="modal-input font-bold">
-                            <option value="staff" ${userData?.role === 'staff' ? 'selected' : ''}>STAFF</option>
-                            <option value="admin" ${userData?.role === 'admin' ? 'selected' : ''}>ADMIN</option>
+                            <option value="staff" ${userData?.role === "staff" ? "selected" : ""}>STAFF</option>
+                            <option value="admin" ${userData?.role === "admin" ? "selected" : ""}>ADMIN</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-[10px] font-black uppercase opacity-40 mb-2 tracking-widest ml-1">Status</label>
-                        <select name="is_active" class="modal-input font-bold" ${isEditingSelf ? 'disabled' : ''}>
-                            <option value="1" ${userData?.is_active == 1 ? 'selected' : ''}>ACTIVE</option>
-                            <option value="0" ${userData?.is_active == 0 ? 'selected' : ''}>DISABLED</option>
+                        <select name="is_active" class="modal-input font-bold" ${isEditingSelf ? "disabled" : ""}>
+                            <option value="1" ${userData?.is_active == 1 ? "selected" : ""}>ACTIVE</option>
+                            <option value="0" ${userData?.is_active == 0 ? "selected" : ""}>DISABLED</option>
                         </select>
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-[10px] font-black uppercase opacity-40 mb-2 tracking-widest ml-1">
-                        ${userData ? 'New Password (Optional)' : 'Password'}
+                        ${userData ? "New Password (Optional)" : "Password"}
                     </label>
-                    <input type="password" name="password" class="modal-input font-bold" ${userData ? '' : 'required'}>
+                    <input type="password" name="password" class="modal-input font-bold" ${userData ? "" : "required"}>
                 </div>
             </form>
 
@@ -783,54 +818,61 @@ function openUserModal(userData = null) {
                 .modal-input:focus { border-color: ${themeColor}; box-shadow: 0 0 0 4px ${themeColor}15; }
             </style>
         `,
-        showCancelButton: true,
-        confirmButtonText: userData ? "Update User" : "Create User",
-        confirmButtonColor: themeColor,
-        preConfirm: async () => {
-            const formData = new FormData(document.getElementById("userForm"));
-            const action = userData ? "edit" : "create";
-            try {
-                const response = await fetch(`user_actions.php?action=${action}`, {
-                    method: "POST",
-                    body: formData
-                });
-                const result = await response.json();
-                if (!result.success) throw new Error(result.message);
-                return result;
-            } catch (error) {
-                Swal.showValidationMessage(`Error: ${error.message}`);
-            }
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            Swal.fire({ icon: 'success', title: 'Success', timer: 1000, showConfirmButton: false })
-            .then(() => location.reload());
-        }
-    });
+    showCancelButton: true,
+    confirmButtonText: userData ? "Update User" : "Create User",
+    confirmButtonColor: themeColor,
+    preConfirm: async () => {
+      const formData = new FormData(document.getElementById("userForm"));
+      const action = userData ? "edit" : "create";
+      try {
+        const response = await fetch(`user_actions.php?action=${action}`, {
+          method: "POST",
+          body: formData,
+        });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message);
+        return result;
+      } catch (error) {
+        Swal.showValidationMessage(`Error: ${error.message}`);
+      }
+    },
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        timer: 1000,
+        showConfirmButton: false,
+      }).then(() => location.reload());
+    }
+  });
 }
 
 //The Disable Logic: disableUser
 async function disableUser(id, username) {
-    const isDark = document.body.classList.contains("dark");
-    const result = await Swal.fire({
-        title: `Disable @${username}?`,
-        text: "User will no longer be able to log in.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#ef4444",
-        confirmButtonText: "Yes, Disable",
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#ffffff" : "#1f2937"
-    });
+  const isDark = document.body.classList.contains("dark");
+  const result = await Swal.fire({
+    title: `Disable @${username}?`,
+    text: "User will no longer be able to log in.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#ef4444",
+    confirmButtonText: "Yes, Disable",
+    background: isDark ? "#1f2937" : "#ffffff",
+    color: isDark ? "#ffffff" : "#1f2937",
+  });
 
-    if (result.isConfirmed) {
-        const formData = new FormData();
-        formData.append('id', id);
-        const response = await fetch('../admin/user_actions.php?action=delete', { method: 'POST', body: formData });
-        const res = await response.json();
-        if(res.success) location.reload();
-        else Swal.fire("Error", res.message, "error");
-    }
+  if (result.isConfirmed) {
+    const formData = new FormData();
+    formData.append("id", id);
+    const response = await fetch("../admin/user_actions.php?action=delete", {
+      method: "POST",
+      body: formData,
+    });
+    const res = await response.json();
+    if (res.success) location.reload();
+    else Swal.fire("Error", res.message, "error");
+  }
 }
 
 // Ask the user for confirmation before logging out

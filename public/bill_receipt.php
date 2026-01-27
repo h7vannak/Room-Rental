@@ -116,7 +116,7 @@ $paymentPageUrl = "../bakong_payments/bakong_pay.php?bill_id=" . $id;
             <i class="fa-solid fa-arrow-left"></i> Back to Bills
         </a>
         <div class="flex gap-3">
-            <?php if (!$bill['paid']): ?>
+            <?php if (!$bill['is_paid']): ?>
                 <a href="<?= $paymentPageUrl ?>" class="bg-red-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-red-500/30 hover:bg-red-700 transition flex items-center gap-2">
                     <i class="fa-solid fa-wallet"></i> Pay Online
                 </a>
@@ -201,7 +201,7 @@ $paymentPageUrl = "../bakong_payments/bakong_pay.php?bill_id=" . $id;
             <div class="mt-12 pt-8 border-t-4 border-slate-900 flex flex-col md:flex-row justify-between items-center gap-10">
                 <div class="text-center md:text-left">
                     <p class="text-[10px] uppercase font-black text-slate-400 mb-1 tracking-widest">Invoice Status</p>
-                    <?php if ($bill['paid']): ?>
+                    <?php if ($bill['is_paid']): ?>
                         <div class="flex items-center gap-2 text-emerald-600">
                             <i class="fa-solid fa-circle-check text-2xl"></i>
                             <span class="font-black text-4xl uppercase italic tracking-tighter">PAID</span>
@@ -215,7 +215,7 @@ $paymentPageUrl = "../bakong_payments/bakong_pay.php?bill_id=" . $id;
                 </div>
 
                 <div class="flex flex-col md:flex-row items-center gap-8">
-                    <?php if (!$bill['paid']): ?>
+                    <?php if (!$bill['is_paid']): ?>
                     <div class="text-center">
                         <div class="p-4 bg-white border-2 border-red-500 rounded-[1.5rem] shadow-xl shadow-red-500/10">
                             <img src="<?= $receiptQrUrl ?>" alt="Scan to Pay with KHQR" class="w-28 h-28">

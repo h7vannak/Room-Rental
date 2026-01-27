@@ -100,10 +100,19 @@ $lastBill = $lastBillResult->fetch_assoc();
 $nextInvoiceId = ($lastBill['bill_id'] ?? 0) + 1;
 $formattedInvoice = "INV-" . date('Y') . "-" . str_pad($nextInvoiceId, 4, '0', STR_PAD_LEFT);
 
-// 2. Prepare Rooms and Rates data (Same as before)
+// 2. Prepare Rooms and Rates data
 $roomsQuery = $conn->query("
-    SELECT rm.room_id, rm.room_number, r.renter_name, 
-    (SELECT new_electric FROM monthly_bills mb WHERE mb.room_id = rm.room_id ORDER BY bill_month DESC LIMIT 1) as last_e
+    SELECT 
+        rm.room_id, 
+        rm.room_number, 
+        r.renter_name, 
+        COALESCE((
+            SELECT mb.new_electric 
+            FROM monthly_bills mb 
+            WHERE mb.room_id = rm.room_id 
+            ORDER BY mb.bill_id DESC 
+            LIMIT 1
+        ), 0.00) as last_e
     FROM rooms rm
     JOIN renters r ON rm.renter_id = r.renter_id
     WHERE rm.status = 'ACTIVE'
