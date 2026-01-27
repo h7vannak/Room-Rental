@@ -70,7 +70,7 @@ $availableCount = $totalRooms - $occupiedCount;
                     class="fa-solid fa-check-to-slot"></i></div>
             <div>
                 <p class="text-[10px] font-black uppercase opacity-40">Available</p>
-                <p class="text-xl font-black text-emerald-500"><?= $occupiedCount ?></p>
+                <p class="text-xl font-black text-emerald-500"><?= $availableCount ?></p>
             </div>
         </div>
         <div

@@ -197,9 +197,10 @@ $ratesData = $ratesQuery ? $ratesQuery->fetch_all(MYSQLI_ASSOC) : [];
         </form>
     </div>
 
-    <div
-        class="<?= $isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100' ?> border rounded-[2rem] overflow-hidden shadow-xl">
-        <div class="overflow-x-auto">
+    <!-- <div class="<?= $isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100' ?> border rounded-[2rem] overflow-hidden shadow-xl"> -->
+    <div class="<?= $isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100' ?> border rounded-[2rem] shadow-xl">
+        <!-- <div class="overflow-x-auto"> -->
+        <div>
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr
