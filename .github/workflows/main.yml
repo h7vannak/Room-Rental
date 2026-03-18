@@ -25,11 +25,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '24'      # ← bumped from 20
 
       - name: Install JS dependencies
-        run: npm install
+        run: npm install          # ← changed from npm ci (no lock file needed)
 
       - name: Build Tailwind CSS
         run: npx tailwindcss build
