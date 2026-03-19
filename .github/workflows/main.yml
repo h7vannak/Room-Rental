@@ -1,5 +1,4 @@
 name: CI
-
 on:
   push:
     branches: [master]
@@ -9,7 +8,6 @@ on:
 jobs:
   lint-and-check:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,10 +23,11 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'      # ← bumped from 20
+          node-version: '20'     # Active LTS
+          cache: 'npm'           # speeds up repeat runs
 
       - name: Install JS dependencies
-        run: npm install          # ← changed from npm ci (no lock file needed)
+        run: npm ci              # strict + reproducible
 
       - name: Build Tailwind CSS
-        run: npx tailwindcss build
+        run: npm run build       # defined in package.json
